@@ -1,10 +1,10 @@
-FROM ubuntu:jammy as builder
+FROM ubuntu:noble as builder
 
 ENV PREFIX=/usr/local \
-    FFMPEG_VERSION=6.0 \
-    X264_VERSION=a8b68ebfaa68621b5ac8907610d3335971839d52 \
-    X265_VERSION=2.3 \
-    FDKAAC_VERSION=2.0.2
+    FFMPEG_VERSION=7.0.1 \
+    X264_VERSION=4613ac3c15fd75cebc4b9f65b7fb95e70a3acce1 \
+    X265_VERSION=3.6 \
+    FDKAAC_VERSION=2.0.3
 
 # https://trac.ffmpeg.org/wiki/CompilationGuide/Ubuntu
 RUN apt-get update && \
@@ -51,7 +51,7 @@ RUN DIR=/tmp/x264 && \
 # https://github.com/videolan/x265/blob/master/source/CMakeLists.txt
 RUN DIR=/tmp/x265 && \
     mkdir -p ${DIR} && cd ${DIR} && \
-    git clone https://bitbucket.org/multicoreware/x265_git.git -b Release_3.5 . && \
+    curl -fsSL https://bitbucket.org/multicoreware/x265_git/downloads/x265_${X265_VERSION}.tar.gz | tar -zx --strip-components=1 && \
     cd ./build/linux && \
     cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="${PREFIX}" -DENABLE_SHARED=off -DNATIVE_BUILD=on -DENABLE_CLI=off -Wno-dev ../../source && \
     make -j"$(nproc)" && \
@@ -69,9 +69,8 @@ RUN DIR=/tmp/fdk-aac && \
 # ffmpeg
 # https://github.com/FFmpeg/FFmpeg/blob/master/configure
 RUN DIR=/tmp/ffmpeg_sources && \
-    mkdir -p ${DIR} && \
-    cd ${DIR} && \
-    curl -sL http://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz | tar -Jx --strip-components=1 && \
+    mkdir -p ${DIR} && cd ${DIR} && \
+    curl -fsSL https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n${FFMPEG_VERSION}.tar.gz | tar -zx --strip-components=1 && \
     # https://askubuntu.com/questions/1252997/unable-to-compile-ffmpeg-on-ubuntu-20-04
     apt-get install -y libunistring-dev && \
     ./configure \
@@ -116,7 +115,7 @@ RUN DIR=/tmp/ffmpeg_sources && \
 
 
 
-FROM ubuntu:jammy
+FROM ubuntu:noble
 
 COPY --from=builder /usr/local/ /usr/local
 WORKDIR /usr/local/bin

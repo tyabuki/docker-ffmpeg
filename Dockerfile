@@ -1,16 +1,16 @@
-FROM ubuntu:jammy as builder
+FROM ubuntu:noble as builder
 
 ENV PREFIX=/usr/local \
-    FFMPEG_VERSION=6.0 \
-    X264_VERSION=a8b68ebfaa68621b5ac8907610d3335971839d52 \
-    X265_VERSION=2.3 \
-    VPX_VERSION=1.13.0 \
-    FDKAAC_VERSION=2.0.2 \
-    OPUS_VERSION=1.4 \
-    AOM_VERSION=3.6.1 \
-    SVTAV1_VERSION=1.6.0 \
-    DAV1D_VERSION=1.2.1 \
-    VMAF_VERSION=2.3.1    
+    FFMPEG_VERSION=7.0.1 \
+    X264_VERSION=4613ac3c15fd75cebc4b9f65b7fb95e70a3acce1 \
+    X265_VERSION=3.6 \
+    FDKAAC_VERSION=2.0.3 \
+    VPX_VERSION=1.14.1 \
+    OPUS_VERSION=1.5.2 \
+    AOM_VERSION=3.9.1 \
+    SVTAV1_VERSION=2.1.2 \
+    DAV1D_VERSION=1.4.3 \
+    VMAF_VERSION=3.0.0
 
 # https://trac.ffmpeg.org/wiki/CompilationGuide/Ubuntu
 RUN apt-get update && \
@@ -45,19 +45,21 @@ RUN apt-get -y install \
       curl
 
 # x264 http://www.videolan.org/developers/x264.html
+# https://code.videolan.org/videolan/x264/-/blob/master/configure
 RUN DIR=/tmp/x264 && \
     mkdir -p ${DIR} && cd ${DIR} && \
     git clone https://code.videolan.org/videolan/x264.git . && git checkout ${X264_VERSION} && \
-    ./configure --extra-cflags="-O3 -march=native -pipe" --prefix="${PREFIX}" --enable-static --enable-pic && \
+    ./configure --extra-cflags="-O3 -march=native -pipe" --prefix="${PREFIX}" --enable-static --enable-pic --disable-cli && \
     make -j"$(nproc)" && \
     make install
 
 # x265 http://x265.org/
+# https://github.com/videolan/x265/blob/master/source/CMakeLists.txt
 RUN DIR=/tmp/x265 && \
     mkdir -p ${DIR} && cd ${DIR} && \
-    git clone https://bitbucket.org/multicoreware/x265_git.git -b Release_3.5 . && \
+    curl -fsSL https://bitbucket.org/multicoreware/x265_git/downloads/x265_${X265_VERSION}.tar.gz | tar -zx --strip-components=1 && \
     cd ./build/linux && \
-    cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="${PREFIX}" -DENABLE_SHARED=off -Wno-dev ../../source && \
+    cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="${PREFIX}" -DENABLE_SHARED=off -DNATIVE_BUILD=on -DENABLE_CLI=off -Wno-dev ../../source && \
     make -j"$(nproc)" && \
     make install
 
@@ -87,7 +89,7 @@ RUN DIR=/tmp/opus && \
     make -j"$(nproc)" && \
     make install
 
-# libaom 
+# libaom https://aomedia.googlesource.com/aom
 RUN DIR=/tmp/aom && \
     mkdir -p ${DIR} && cd ${DIR} && \
     git clone https://aomedia.googlesource.com/aom . && git checkout v${AOM_VERSION} && \
@@ -96,7 +98,7 @@ RUN DIR=/tmp/aom && \
     make -j"$(nproc)" && \
     make install
 
-# libsvtav1
+# libsvtav1 https://gitlab.com/AOMediaCodec/SVT-AV1/-/tags
 RUN DIR=/tmp/svtav1 && \
     mkdir -p ${DIR} && cd ${DIR} && \
     git clone https://gitlab.com/AOMediaCodec/SVT-AV1.git . && git checkout v${SVTAV1_VERSION} && \
@@ -105,7 +107,7 @@ RUN DIR=/tmp/svtav1 && \
     make -j"$(nproc)" && \
     make install
 
-# libdav1d
+# libdav1d https://code.videolan.org/videolan/dav1d/-/tags
 RUN DIR=/tmp/dav1d && \
     mkdir -p ${DIR} && cd ${DIR} && \
     git clone https://code.videolan.org/videolan/dav1d.git . && git checkout ${DAV1D_VERSION} && \
@@ -114,7 +116,7 @@ RUN DIR=/tmp/dav1d && \
     ninja && \
     ninja install
 
-# libvmaf
+# libvmaf https://github.com/Netflix/vmaf/releases
 RUN DIR=/tmp/vmaf && \
     mkdir -p ${DIR} && cd ${DIR} && \
     curl -sL https://github.com/Netflix/vmaf/archive/refs/tags/v${VMAF_VERSION}.tar.gz | tar -zx --strip-components=1 && \
@@ -124,10 +126,10 @@ RUN DIR=/tmp/vmaf && \
     ninja install
 
 # ffmpeg
+# https://github.com/FFmpeg/FFmpeg/blob/master/configure
 RUN DIR=/tmp/ffmpeg_sources && \
-    mkdir -p ${DIR} && \
-    cd ${DIR} && \
-    curl -sL http://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz | tar -Jx --strip-components=1 && \
+    mkdir -p ${DIR} && cd ${DIR} && \
+    curl -fsSL https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n${FFMPEG_VERSION}.tar.gz | tar -zx --strip-components=1 && \
     # https://askubuntu.com/questions/1252997/unable-to-compile-ffmpeg-on-ubuntu-20-04
     apt-get install -y libunistring-dev && \
     ./configure \
@@ -166,7 +168,7 @@ RUN DIR=/tmp/ffmpeg_sources && \
 
 
 
-FROM ubuntu:jammy
+FROM ubuntu:noble
 
 RUN apt-get update && \
     apt-get -y install \
