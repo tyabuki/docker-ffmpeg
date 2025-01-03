@@ -1,4 +1,3 @@
-FROM ubuntu:noble as builder
 
 ENV PREFIX=/usr/local \
     FFMPEG_VERSION=7.0.1 \
@@ -11,6 +10,7 @@ ENV PREFIX=/usr/local \
     SVTAV1_VERSION=2.1.2 \
     DAV1D_VERSION=1.4.3 \
     VMAF_VERSION=3.0.0
+FROM ubuntu:noble AS builder
 
 # https://trac.ffmpeg.org/wiki/CompilationGuide/Ubuntu
 RUN apt-get update && \
