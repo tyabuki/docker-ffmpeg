@@ -1,16 +1,6 @@
-
-ENV PREFIX=/usr/local \
-    FFMPEG_VERSION=7.0.1 \
-    X264_VERSION=4613ac3c15fd75cebc4b9f65b7fb95e70a3acce1 \
-    X265_VERSION=3.6 \
-    FDKAAC_VERSION=2.0.3 \
-    VPX_VERSION=1.14.1 \
-    OPUS_VERSION=1.5.2 \
-    AOM_VERSION=3.9.1 \
-    SVTAV1_VERSION=2.1.2 \
-    DAV1D_VERSION=1.4.3 \
-    VMAF_VERSION=3.0.0
 FROM ubuntu:noble AS builder
+
+ENV PREFIX=/usr/local
 
 # https://trac.ffmpeg.org/wiki/CompilationGuide/Ubuntu
 RUN apt-get update && \
@@ -45,45 +35,50 @@ RUN apt-get -y install \
       curl
 
 # x264 http://www.videolan.org/developers/x264.html
-# https://code.videolan.org/videolan/x264/-/blob/master/configure
+# branch stable: https://code.videolan.org/videolan/x264/-/tree/stable?ref_type=heads
+# https://code.videolan.org/videolan/x264/-/blob/stable/configure
 RUN DIR=/tmp/x264 && \
     mkdir -p ${DIR} && cd ${DIR} && \
-    git clone https://code.videolan.org/videolan/x264.git . && git checkout ${X264_VERSION} && \
+    curl -fsSL 'https://code.videolan.org/videolan/x264/-/archive/31e19f92f00c7003fa115047ce50978bc98c3a0d/x264-31e19f92f00c7003fa115047ce50978bc98c3a0d.tar.gz' | tar -zx --strip-components=1 && \
     ./configure --extra-cflags="-O3 -march=native -pipe" --prefix="${PREFIX}" --enable-static --enable-pic --disable-cli && \
     make -j"$(nproc)" && \
     make install
 
 # x265 http://x265.org/
+# https://bitbucket.org/multicoreware/x265_git/downloads/
 # https://github.com/videolan/x265/blob/master/source/CMakeLists.txt
 RUN DIR=/tmp/x265 && \
     mkdir -p ${DIR} && cd ${DIR} && \
-    curl -fsSL https://bitbucket.org/multicoreware/x265_git/downloads/x265_${X265_VERSION}.tar.gz | tar -zx --strip-components=1 && \
+    curl -fsSL 'https://bitbucket.org/multicoreware/x265_git/downloads/x265_4.1.tar.gz' | tar -zx --strip-components=1 && \
     cd ./build/linux && \
     cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="${PREFIX}" -DENABLE_SHARED=off -DNATIVE_BUILD=on -DENABLE_CLI=off -Wno-dev ../../source && \
     make -j"$(nproc)" && \
     make install
 
 # libvpx https://www.webmproject.org/code/
+# https://github.com/webmproject/libvpx/tags
 RUN DIR=/tmp/vpx && \
     mkdir -p ${DIR} && cd ${DIR} && \
-    curl -sL https://github.com/webmproject/libvpx/archive/refs/tags/v${VPX_VERSION}.tar.gz | tar -zx --strip-components=1 && \
+    curl -fsSL 'https://github.com/webmproject/libvpx/archive/refs/tags/v1.15.0.tar.gz' | tar -zx --strip-components=1 && \
     ./configure --extra-cflags="-O3 -march=native -pipe" --extra-cxxflags='-O3 -march=native -pipe' --prefix="${PREFIX}" --disable-examples --disable-unit-tests --enable-vp9-highbitdepth --as=yasm --disable-debug && \
     make -j"$(nproc)" && \
     make install
 
 # fdk-aac https://github.com/mstorsjo/fdk-aac
+# https://github.com/mstorsjo/fdk-aac/tags
 RUN DIR=/tmp/fdk-aac && \
     mkdir -p ${DIR} && cd ${DIR} && \
-    curl -sL https://github.com/mstorsjo/fdk-aac/archive/refs/tags/v${FDKAAC_VERSION}.tar.gz | tar -zx --strip-components=1 && \
+    curl -fsSL 'https://github.com/mstorsjo/fdk-aac/archive/refs/tags/v2.0.3.tar.gz' | tar -zx --strip-components=1 && \
     autoreconf -fiv && \
     ./configure CFLAGS="-O3 -march=native -pipe" CXXFLAGS='-O3 -march=native -pipe' --prefix="${PREFIX}" --disable-shared && \
     make -j"$(nproc)" && \
     make install
 
 # libopus https://www.opus-codec.org/
+# https://github.com/xiph/opus/releases
 RUN DIR=/tmp/opus && \
     mkdir -p ${DIR} && cd ${DIR} && \
-    curl -sL https://github.com/xiph/opus/archive/refs/tags/v${OPUS_VERSION}.tar.gz | tar -zx --strip-components=1 && \
+    curl -fsSL 'https://github.com/xiph/opus/archive/refs/tags/v1.5.2.tar.gz' | tar -zx --strip-components=1 && \
     ./autogen.sh && \
     ./configure CFLAGS="-O3 -march=native -pipe" CXXFLAGS='-O3 -march=native -pipe' --prefix="${PREFIX}" --disable-shared && \
     make -j"$(nproc)" && \
@@ -92,26 +87,26 @@ RUN DIR=/tmp/opus && \
 # libaom https://aomedia.googlesource.com/aom
 RUN DIR=/tmp/aom && \
     mkdir -p ${DIR} && cd ${DIR} && \
-    git clone https://aomedia.googlesource.com/aom . && git checkout v${AOM_VERSION} && \
+    git clone https://aomedia.googlesource.com/aom . && git checkout v3.11.0 && \
     mkdir aom_build && cd aom_build && \
     cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="${PREFIX}" -DENABLE_TESTS=OFF -DENABLE_NASM=on .. && \
     make -j"$(nproc)" && \
     make install
 
-# libsvtav1 https://gitlab.com/AOMediaCodec/SVT-AV1/-/tags
+# libsvtav1 https://gitlab.com/AOMediaCodec/SVT-AV1/-/releases
 RUN DIR=/tmp/svtav1 && \
     mkdir -p ${DIR} && cd ${DIR} && \
-    git clone https://gitlab.com/AOMediaCodec/SVT-AV1.git . && git checkout v${SVTAV1_VERSION} && \
-    mkdir svtav1_build && cd svtav1_build && \
-    cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="${PREFIX}" -DCMAKE_BUILD_TYPE=Release -DBUILD_DEC=OFF -DBUILD_SHARED_LIBS=OFF .. && \
-    make -j"$(nproc)" && \
+    curl -fsSL 'https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/v2.3.0/SVT-AV1-v2.3.0.tar.gz' | tar -zx --strip-components=1 && \
+    cd Build && \
+    cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release && \
+    make -j $(nproc) && \
     make install
 
-# libdav1d https://code.videolan.org/videolan/dav1d/-/tags
+# libdav1d https://code.videolan.org/videolan/dav1d/-/releases
 RUN DIR=/tmp/dav1d && \
     mkdir -p ${DIR} && cd ${DIR} && \
-    git clone https://code.videolan.org/videolan/dav1d.git . && git checkout ${DAV1D_VERSION} && \
-    mkdir dav1d_build && cd dav1d_build && \
+    curl -fsSL 'https://code.videolan.org/videolan/dav1d/-/archive/1.5.0/dav1d-1.5.0.tar.gz' | tar -zx --strip-components=1 && \
+    mkdir build && cd build && \
     meson setup -Denable_tools=false -Denable_tests=false --default-library=static .. --prefix "${PREFIX}" --libdir="${PREFIX}/lib" && \
     ninja && \
     ninja install
@@ -119,7 +114,7 @@ RUN DIR=/tmp/dav1d && \
 # libvmaf https://github.com/Netflix/vmaf/releases
 RUN DIR=/tmp/vmaf && \
     mkdir -p ${DIR} && cd ${DIR} && \
-    curl -sL https://github.com/Netflix/vmaf/archive/refs/tags/v${VMAF_VERSION}.tar.gz | tar -zx --strip-components=1 && \
+    curl -fsSL 'https://github.com/Netflix/vmaf/archive/refs/tags/v3.0.0.tar.gz' | tar -zx --strip-components=1 && \
     mkdir -p libvmaf/vmaf_build && cd libvmaf/vmaf_build && \
     meson setup -Denable_tests=false -Denable_docs=false --buildtype=release --default-library=static .. --prefix "${PREFIX}" --libdir="${PREFIX}/lib" && \
     ninja && \
@@ -127,9 +122,10 @@ RUN DIR=/tmp/vmaf && \
 
 # ffmpeg
 # https://github.com/FFmpeg/FFmpeg/blob/master/configure
+# https://github.com/FFmpeg/FFmpeg/tags
 RUN DIR=/tmp/ffmpeg_sources && \
     mkdir -p ${DIR} && cd ${DIR} && \
-    curl -fsSL https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n${FFMPEG_VERSION}.tar.gz | tar -zx --strip-components=1 && \
+    curl -fsSL 'https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n7.1.tar.gz' | tar -zx --strip-components=1 && \
     # https://askubuntu.com/questions/1252997/unable-to-compile-ffmpeg-on-ubuntu-20-04
     apt-get install -y libunistring-dev && \
     ./configure \
@@ -179,7 +175,7 @@ RUN apt-get update && \
       libfreetype6 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-      
+
 COPY --from=builder /usr/local/ /usr/local
 WORKDIR /usr/local/bin
 
