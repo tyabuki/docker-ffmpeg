@@ -1,4 +1,4 @@
-FROM ubuntu:noble AS builder
+FROM debian:bookworm AS builder
 
 ENV PREFIX=/usr/local
 
@@ -164,7 +164,7 @@ RUN DIR=/tmp/ffmpeg_sources && \
 
 
 
-FROM ubuntu:noble
+FROM debian:bookworm-slim
 
 RUN apt-get update && \
     apt-get -y install \
