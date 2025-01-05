@@ -1,4 +1,4 @@
-FROM ubuntu:noble as builder
+FROM ubuntu:noble AS builder
 
 ENV PREFIX=/usr/local \
     FFMPEG_VERSION=7.0.1 \
