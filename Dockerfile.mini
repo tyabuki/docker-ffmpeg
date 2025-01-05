@@ -1,10 +1,6 @@
 FROM ubuntu:noble AS builder
 
-ENV PREFIX=/usr/local \
-    FFMPEG_VERSION=7.0.1 \
-    X264_VERSION=4613ac3c15fd75cebc4b9f65b7fb95e70a3acce1 \
-    X265_VERSION=3.6 \
-    FDKAAC_VERSION=2.0.3
+ENV PREFIX=/usr/local
 
 # https://trac.ffmpeg.org/wiki/CompilationGuide/Ubuntu
 RUN apt-get update && \
@@ -39,28 +35,31 @@ RUN apt-get -y install \
       curl
 
 # x264 http://www.videolan.org/developers/x264.html
-# https://code.videolan.org/videolan/x264/-/blob/master/configure
+# branch stable: https://code.videolan.org/videolan/x264/-/tree/stable?ref_type=heads
+# https://code.videolan.org/videolan/x264/-/blob/stable/configure
 RUN DIR=/tmp/x264 && \
     mkdir -p ${DIR} && cd ${DIR} && \
-    git clone https://code.videolan.org/videolan/x264.git . && git checkout ${X264_VERSION} && \
+    curl -fsSL 'https://code.videolan.org/videolan/x264/-/archive/31e19f92f00c7003fa115047ce50978bc98c3a0d/x264-31e19f92f00c7003fa115047ce50978bc98c3a0d.tar.gz' | tar -zx --strip-components=1 && \
     ./configure --extra-cflags="-O3 -march=native -pipe" --prefix="${PREFIX}" --enable-static --enable-pic --disable-cli && \
     make -j"$(nproc)" && \
     make install
 
 # x265 http://x265.org/
+# https://bitbucket.org/multicoreware/x265_git/downloads/
 # https://github.com/videolan/x265/blob/master/source/CMakeLists.txt
 RUN DIR=/tmp/x265 && \
     mkdir -p ${DIR} && cd ${DIR} && \
-    curl -fsSL https://bitbucket.org/multicoreware/x265_git/downloads/x265_${X265_VERSION}.tar.gz | tar -zx --strip-components=1 && \
+    curl -fsSL 'https://bitbucket.org/multicoreware/x265_git/downloads/x265_4.1.tar.gz' | tar -zx --strip-components=1 && \
     cd ./build/linux && \
     cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="${PREFIX}" -DENABLE_SHARED=off -DNATIVE_BUILD=on -DENABLE_CLI=off -Wno-dev ../../source && \
     make -j"$(nproc)" && \
     make install
 
 # fdk-aac https://github.com/mstorsjo/fdk-aac
+# https://github.com/mstorsjo/fdk-aac/tags
 RUN DIR=/tmp/fdk-aac && \
     mkdir -p ${DIR} && cd ${DIR} && \
-    curl -sL https://github.com/mstorsjo/fdk-aac/archive/refs/tags/v${FDKAAC_VERSION}.tar.gz | tar -zx --strip-components=1 && \
+    curl -fsSL 'https://github.com/mstorsjo/fdk-aac/archive/refs/tags/v2.0.3.tar.gz' | tar -zx --strip-components=1 && \
     autoreconf -fiv && \
     ./configure CFLAGS="-O3 -march=native -pipe" CXXFLAGS='-O3 -march=native -pipe' --prefix="${PREFIX}" --disable-shared && \
     make -j"$(nproc)" && \
@@ -70,7 +69,7 @@ RUN DIR=/tmp/fdk-aac && \
 # https://github.com/FFmpeg/FFmpeg/blob/master/configure
 RUN DIR=/tmp/ffmpeg_sources && \
     mkdir -p ${DIR} && cd ${DIR} && \
-    curl -fsSL https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n${FFMPEG_VERSION}.tar.gz | tar -zx --strip-components=1 && \
+    curl -fsSL 'https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n7.1.tar.gz' | tar -zx --strip-components=1 && \
     # https://askubuntu.com/questions/1252997/unable-to-compile-ffmpeg-on-ubuntu-20-04
     apt-get install -y libunistring-dev && \
     ./configure \
