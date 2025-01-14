@@ -10,20 +10,7 @@
 
 ### codecs
 ```
-$ docker run --rm ffmpeg:7.0.1 -codecs                                                                                                                                                                                                                     01:11:19 [490/1966]
-ffmpeg version 7.0.1 Copyright (c) 2000-2024 the FFmpeg developers
-  built with gcc 13 (Ubuntu 13.2.0-23ubuntu4)
-  configuration: --prefix=/usr/local --pkg-config-flags=--static --extra-cflags=-I/usr/local/include --extra-ldflags=-L/usr/local/lib --extra-libs='-lpthread -lm' --extra-cflags='-march=native -pipe' --optflags=-O3 --enable-gpl --enable-gnutls --enable-libaom --enable-l
-ibass --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libsvtav1 --enable-libdav1d --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265 --enable-nonfree --disable-vaapi --disable-vdpau --disable-ffplay --disable-debu
-g
-  libavutil      59.  8.100 / 59.  8.100
-  libavcodec     61.  3.100 / 61.  3.100
-  libavformat    61.  1.100 / 61.  1.100
-  libavdevice    61.  1.100 / 61.  1.100
-  libavfilter    10.  1.100 / 10.  1.100
-  libswscale      8.  1.100 /  8.  1.100
-  libswresample   5.  1.100 /  5.  1.100
-  libpostproc    58.  1.100 / 58.  1.100
+$ docker run --rm ffmpeg:n7.1 -codecs                                                                                                                                                                                                                     01:11:19 [490/1966]
 Codecs:
  D..... = Decoding supported
  .E.... = Encoding supported
@@ -56,7 +43,7 @@ Codecs:
  D.VIL. aura                 Auravision AURA
  D.VIL. aura2                Auravision Aura 2
  DEV.L. av1                  Alliance for Open Media AV1 (decoders: libdav1d libaom-av1 av1) (encoders: libaom-av1 libsvtav1)
- D.V... avrn                 Avid AVI Codec
+ D.VI.S avrn                 Avid AVI Codec
  DEVI.S avrp                 Avid 1:1 10-bit RGB Packer
  D.V.L. avs                  AVS (Audio Video Standard) video
  ..V.L. avs2                 AVS2-P2/IEEE1857.4
@@ -142,7 +129,7 @@ Codecs:
  DEVILS jpeg2000             JPEG 2000
  DEVILS jpegls               JPEG-LS
  ..VILS jpegxl               JPEG XL
- D.VIL. jv                   Bitmap Brothers JV video
+ D.V.L. jv                   Bitmap Brothers JV video
  D.V.L. kgv1                 Kega Game Video
  D.V.L. kmvc                 Karl Morton's video codec
  D.VI.S lagarith             Lagarith lossless
@@ -195,7 +182,7 @@ Codecs:
  DEVI.S pgmyuv               PGMYUV (Portable GrayMap YUV) image
  D.VI.S pgx                  PGX (JPEG2000 Test Format)
  DEVI.S phm                  PHM (Portable HalfFloatMap) image
- D.V.L. photocd              Kodak Photo CD
+ D.VIL. photocd              Kodak Photo CD
  D.VIL. pictor               Pictor/PC Paint
  D.VIL. pixlet               Apple Pixlet
  DEV..S png                  PNG (Portable Network Graphics) image
@@ -243,7 +230,7 @@ Codecs:
  DEVI.S targa                Truevision Targa image
  D.VI.S targa_y216           Pinnacle TARGA CineWave YUV16
  D.V.L. tdsc                 TDSC
- D.V.L. tgq                  Electronic Arts TGQ video (decoders: eatgq)
+ D.VIL. tgq                  Electronic Arts TGQ video (decoders: eatgq)
  D.V.L. tgv                  Electronic Arts TGV video (decoders: eatgv)
  D.V.L. theora               Theora
  D.VIL. thp                  Nintendo Gamecube THP video
@@ -266,7 +253,7 @@ Codecs:
  DEVI.S v410                 Uncompressed 4:4:4 10-bit
  D.V.L. vb                   Beam Software VB
  D.VI.S vble                 VBLE Lossless Codec
- DEV.L. vbn                  Vizrt Binary Image
+ DEVIL. vbn                  Vizrt Binary Image
  D.V.L. vc1                  SMPTE VC-1 (decoders: vc1 vc1_v4l2m2m)
  D.V.L. vc1image             Windows Media Video 9 Image v2
  D.VIL. vcr1                 ATI VCR1
@@ -423,6 +410,7 @@ Codecs:
  D.AIL. imc                  IMC (Intel Music Coder)
  D.AIL. interplay_dpcm       DPCM Interplay
  D.AIL. interplayacm         Interplay ACM
+ ..AIL. lc3                  LC3 (Low Complexity Communication Codec)
  D.AIL. mace3                MACE (Macintosh Audio Compression/Expansion) 3:1
  D.AIL. mace6                MACE (Macintosh Audio Compression/Expansion) 6:1
  D.AIL. metasound            Voxware MetaSound
@@ -522,6 +510,7 @@ Codecs:
  ..D... dvd_nav_packet       DVD Nav packet
  ..D... epg                  Electronic Program Guide
  ..D... klv                  SMPTE 336M Key-Length-Value (KLV) metadata
+ ..D... lcevc                LCEVC (Low Complexity Enhancement Video Coding) / MPEG-5 LCEVC / MPEG-5 part 2
  ..D... mpegts               raw MPEG-TS stream
  ..D... otf                  OpenType font
  ..D... scte_35              SCTE 35 Message Queue
