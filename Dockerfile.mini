@@ -67,6 +67,7 @@ RUN DIR=/tmp/fdk-aac && \
 
 # ffmpeg
 # https://github.com/FFmpeg/FFmpeg/blob/master/configure
+# https://github.com/FFmpeg/FFmpeg/tags
 RUN DIR=/tmp/ffmpeg_sources && \
     mkdir -p ${DIR} && cd ${DIR} && \
     curl -fsSL 'https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n7.1.tar.gz' | tar -zx --strip-components=1 && \
@@ -74,13 +75,18 @@ RUN DIR=/tmp/ffmpeg_sources && \
     apt-get install -y libunistring-dev && \
     ./configure \
       --prefix=${PREFIX} \
-      --pkg-config-flags=--static \
-      --extra-cflags="-I${PREFIX}/include" \
+      --pkg-config-flags="--static" \
+      --extra-cflags="-I${PREFIX}/include -march=native -O3 -pipe" \
+      --extra-cxxflags="-march=native -O3" \
       --extra-ldflags="-L${PREFIX}/lib" \
       --extra-libs="-lpthread -lm" \
-      --extra-cflags="-march=native -pipe" \
       --optflags="-O3" \
+      --enable-lto \
+      --enable-static \
+      --disable-shared \
       --enable-gpl \
+      --enable-version3 \
+      --enable-nonfree \
 #      --enable-gnutls \
 #      --enable-libaom \
 #      --enable-libass \
@@ -94,7 +100,6 @@ RUN DIR=/tmp/ffmpeg_sources && \
 #      --enable-libvpx \
       --enable-libx264 \
       --enable-libx265 \
-      --enable-nonfree \
       # disable Video Acceleration API (mainly Unix/Intel) code [autodetect]
       --disable-vaapi \
       # disable Nvidia Video Decode and Presentation API for Unix code [autodetect]
@@ -116,7 +121,7 @@ RUN DIR=/tmp/ffmpeg_sources && \
 
 FROM debian:bookworm-slim
 
-COPY --from=builder /usr/local/ /usr/local
+COPY --from=builder /usr/local/bin /usr/local/bin
 WORKDIR /usr/local/bin
 
 CMD        ["--help"]
