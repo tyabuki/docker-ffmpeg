@@ -98,7 +98,7 @@ RUN DIR=/tmp/svtav1 && \
     mkdir -p ${DIR} && cd ${DIR} && \
     curl -fsSL 'https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/v2.3.0/SVT-AV1-v2.3.0.tar.gz' | tar -zx --strip-components=1 && \
     cd Build && \
-    cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF && \
+    cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DBUILD_APPS=OFF -DNATIVE=ON && \
     make -j $(nproc) && \
     make install
 
