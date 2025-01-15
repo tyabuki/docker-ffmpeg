@@ -89,7 +89,7 @@ RUN DIR=/tmp/aom && \
     mkdir -p ${DIR} && cd ${DIR} && \
     git clone https://aomedia.googlesource.com/aom . && git checkout v3.11.0 && \
     mkdir aom_build && cd aom_build && \
-    cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="${PREFIX}" -DENABLE_TESTS=OFF -DENABLE_NASM=on .. && \
+    cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="${PREFIX}" -DENABLE_TESTS=OFF -DENABLE_NASM=ON -DENABLE_EXAMPLES=OFF .. && \
     make -j"$(nproc)" && \
     make install
 
