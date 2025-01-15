@@ -32,6 +32,7 @@ RUN apt-get update && \
 
 RUN apt-get -y install \
       nasm \
+      xxd \
       curl
 
 # x264 http://www.videolan.org/developers/x264.html
