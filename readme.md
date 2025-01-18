@@ -8,7 +8,13 @@
 
 [CompilationGuide/Ubuntu – FFmpeg](https://trac.ffmpeg.org/wiki/CompilationGuide/Ubuntu)
 
-### codecs
+```
+$ docker run --rm --entrypoint='/usr/bin/ls' ffmpeg:n7.1
+ffmpeg
+ffprobe
+vmaf
+```
+
 ```
 $ docker run --rm ffmpeg:n7.1 -codecs                                                                                                                                                                                                                     01:11:19 [490/1966]
 Codecs:

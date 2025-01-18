@@ -128,17 +128,21 @@ RUN DIR=/tmp/ffmpeg_sources && \
     mkdir -p ${DIR} && cd ${DIR} && \
     curl -fsSL 'https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n7.1.tar.gz' | tar -zx --strip-components=1 && \
     # https://askubuntu.com/questions/1252997/unable-to-compile-ffmpeg-on-ubuntu-20-04
-    apt-get install -y libunistring-dev && \
+    apt-get install -y libunistring-dev libssl-dev && \
     ./configure \
       --prefix=${PREFIX} \
-      --pkg-config-flags=--static \
-      --extra-cflags="-I${PREFIX}/include" \
+      --pkg-config-flags="--static" \
+      --extra-cflags="-I${PREFIX}/include -march=native" \
       --extra-ldflags="-L${PREFIX}/lib" \
       --extra-libs="-lpthread -lm" \
-      --extra-cflags="-march=native -pipe" \
-      --optflags="-O3" \
+      --enable-optimizations \
+      --enable-lto \
+      --enable-static \
+      --disable-shared \
       --enable-gpl \
-      --enable-gnutls \
+      --enable-version3 \
+      --enable-nonfree \
+      --enable-openssl \
       --enable-libaom \
       --enable-libass \
       --enable-libfdk-aac \
@@ -151,7 +155,6 @@ RUN DIR=/tmp/ffmpeg_sources && \
       --enable-libvpx \
       --enable-libx264 \
       --enable-libx265 \
-      --enable-nonfree \
       # disable Video Acceleration API (mainly Unix/Intel) code [autodetect]
       --disable-vaapi \
       # disable Nvidia Video Decode and Presentation API for Unix code [autodetect]
@@ -172,12 +175,13 @@ RUN apt-get update && \
       libmp3lame0 \
       libvorbis0a \
       libvorbisenc2 \
+      libssl3 \
       libass9 \
       libfreetype6 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /usr/local/ /usr/local
+COPY --from=builder /usr/local/bin /usr/local/bin
 WORKDIR /usr/local/bin
 
 CMD        ["--help"]
